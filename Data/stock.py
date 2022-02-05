@@ -32,7 +32,6 @@ def init_db():
         print(df.head())
 
 
-
 def get_stock_list():
     """
     获取所有A股股票列表
@@ -157,3 +156,32 @@ def get_single_valuation(code, date, statDate):
     """
     data = get_fundamentals(query(valuation).filter(valuation.code == code), date=date, statDate=statDate)  # 获取财务指标数据
     return data
+
+
+def update_daily_price(stock_code, type='price'):
+    # 3.1是否存在文件：不存在-重新获取，存在->3.2
+    file_root = data_root + type + '/' + stock_code + '.csv'
+    if os.path.exists(file_root):  # 如果存在对应文件
+        # 3.2获取增量数据（code，startsdate=对应股票csv中最新日期，enddate=今天）
+        startdate = pd.read_csv(file_root, usecols=['date'])['date'].iloc[-1]
+        df = get_single_price(stock_code, 'daily', startdate, datetime.datetime.today())
+        # 3.3追加到已有文件中
+        export_data(df, stock_code, 'price', 'a')
+    else:
+        # 重新获取该股票行情数据
+        df = get_single_price(stock_code, 'daily')
+        export_data(df, stock_code, 'price')
+
+    print("股票数据已经更新成功：", stock_code)
+
+
+if __name__ == '__main__':
+    # data = get_fundamentals(query(indicator), statDate='2020')  # 获取财务指标数据
+    # print(data)
+
+    # df = get_fundamentals(query(valuation), date='2021-03-24')
+    # print(df)
+
+    # 5.3获取沪深300指数成分股代码
+    print(get_index_list())
+    print(len(get_index_list()))
