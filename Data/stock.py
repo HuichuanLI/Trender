@@ -8,9 +8,152 @@ import time
 import pandas as pd
 import datetime
 import os
-auth('17621171968','171968')
+import jqdatasdk as jq
+
+auth('17621171968', '171968')
 pd.set_option('display.max_rows', 100000)
 pd.set_option('display.max_columns', 1000)
 
-df = get_price ('000001.XSHE', count=100, end_date='2021-01-31', frequency='daily')
-print(df)
+data_root = '/Users/hui/Desktop/python/python_project/Trender/Data'
+
+
+def init_db():
+    '''
+    初始化股票数据库
+    :return:
+    '''
+    # 1.获取所有股票代码
+    stocks = get_stock_list()
+    # 2.存储到csv文件中
+    for code in stocks:
+        df = get_single_price(code, 'daily')
+        export_data(df, code, 'price')
+        print(code)
+        print(df.head())
+
+
+
+def get_stock_list():
+    """
+    获取所有A股股票列表
+    上海证券交易所.XSHG
+    深圳证券交易所.XSHE
+    :return: stock_list
+    """
+    stock_list = list(get_all_securities(['stock']).index)
+    return stock_list
+
+
+def get_index_list(index_symbol='000300.XSHG'):
+    """
+    获取指数成分股，指数代码查询：https://www.joinquant.com/indexData
+    :param index_symbol: 指数的代码，默认沪深300
+    :return: list，成分股代码
+    """
+    stocks = get_index_stocks(index_symbol)
+    return stocks
+
+
+def get_single_price(code, time_freq, start_date=None, end_date=None):
+    """
+    获取单个股票行情数据
+    :param code:
+    :param time_freq:
+    :param start_date:
+    :param end_date:
+    :return:
+    """
+    # 如果start_date=None，默认为从上市日期开始
+    if start_date is None:
+        start_date = get_security_info(code).start_date
+    if end_date is None:
+        end_date = datetime.datetime.today()
+    # 获取行情数据
+    data = get_price(code, start_date=start_date, end_date=end_date,
+                     frequency=time_freq, panel=False)  # 获取获得在2015年
+    return data
+
+
+def export_data(data, filename, type, mode=None):
+    """
+    导出股票相关数据
+    :param data:
+    :param filename:
+    :param type: 股票数据类型，可以是：price、finance
+    :param mode: a代表追加，none代表默认w写入
+    :return:
+    """
+    file_root = data_root + type + '/' + filename + '.csv'
+    data.index.names = ['date']
+    if mode == 'a':
+        data.to_csv(file_root, mode=mode, header=False)
+        # 删除重复值
+        data = pd.read_csv(file_root)  # 读取数据
+        data = data.drop_duplicates(subset=['date'])  # 以日期列为准
+        data.to_csv(file_root, index=False)  # 重新写入
+    else:
+        data.to_csv(file_root)  # 判断一下file是否存在 > 存在：追加 / 不存在：保持
+
+    print('已成功存储至：', file_root)
+
+
+def get_csv_price(code, start_date, end_date, columns=None):
+    """
+    获取本地数据，且顺便完成数据更新工作
+    :param code: str,股票代码
+    :param start_date: str,起始日期
+    :param end_date: str,起始日期
+    :param columns: list,选取的字段
+    :return: dataframe
+    """
+    # 使用update直接更新
+    update_daily_price(code)
+    # 读取数据
+    file_root = data_root + 'price/' + code + '.csv'
+    if columns is None:
+        data = pd.read_csv(file_root, index_col='date')
+    else:
+        data = pd.read_csv(file_root, usecols=columns, index_col='date')
+    # print(data)
+    # 根据日期筛选股票数据
+    return data[(data.index >= start_date) & (data.index <= end_date)]
+
+
+def transfer_price_freq(data, time_freq):
+    """
+    将数据转换为制定周期：开盘价（周期第1天）、收盘价（周期最后1天）、最高价（周期内）、最低价（周期内）
+    :param data:
+    :param time_freq:
+    :return:
+    """
+    df_trans = pd.DataFrame()
+    df_trans['open'] = data['open'].resample(time_freq).first()
+    df_trans['close'] = data['close'].resample(time_freq).last()
+    df_trans['high'] = data['high'].resample(time_freq).max()
+    df_trans['low'] = data['low'].resample(time_freq).min()
+
+    return df_trans
+
+
+def get_single_finance(code, date, statDate):
+    """
+    获取单个股票财务指标
+    :param code:
+    :param date:
+    :param statDate:
+    :return:
+    """
+    data = get_fundamentals(query(indicator).filter(indicator.code == code), date=date, statDate=statDate)  # 获取财务指标数据
+    return data
+
+
+def get_single_valuation(code, date, statDate):
+    """
+    获取单个股票估值指标
+    :param code:
+    :param date:
+    :param statDate:
+    :return:
+    """
+    data = get_fundamentals(query(valuation).filter(valuation.code == code), date=date, statDate=statDate)  # 获取财务指标数据
+    return data
