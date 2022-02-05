@@ -175,6 +175,17 @@ def update_daily_price(stock_code, type='price'):
     print("股票数据已经更新成功：", stock_code)
 
 
+def calculate_change_pct(data):
+    """
+    涨跌幅 = (当期收盘价-前期收盘价) / 前期收盘价
+    :param data: dataframe，带有收盘价
+    :return: dataframe，带有涨跌幅
+    """
+    data['close_pct'] = (data['close'] - data['close'].shift(1)) \
+                        / data['close'].shift(1)
+    return data
+
+
 if __name__ == '__main__':
     # data = get_fundamentals(query(indicator), statDate='2020')  # 获取财务指标数据
     # print(data)
