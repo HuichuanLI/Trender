@@ -65,7 +65,7 @@ def calculate_prof_pct(data):
     :return:
     """
     # 筛选信号不为0的，并且计算涨跌幅
-    data.loc[data['signal'] != 0, 'profit_pct'] = data['close'].pct_change()
+    data.loc[data['signal'] != 0, 'profit_pct'] = data[data['signal'] != 0]['close'].pct_change()
     data = data[data['signal'] == -1]  # 筛选平仓后的数据：单次收益
     return data
 

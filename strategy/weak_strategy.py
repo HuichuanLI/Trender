@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # @Time : 2022/2/5 10:04 下午
 # @Author : huichuan LI
-# @File : strategy.py
+# @File : weak_strategy.py
 # @Software: PyCharm
 import data.stock as st
 import numpy as np
