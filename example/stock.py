@@ -3,7 +3,7 @@
 # @Author : huichuan LI
 # @File : stock.py
 # @Software: PyCharm
-import Data.stock as st
+import data.stock as st
 
 # 本地读取数据
 # data = st.get_csv_price('000002.XSHE', '2020-01-01', '2020-02-01')

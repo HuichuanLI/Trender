@@ -14,7 +14,7 @@ auth('17621171968', '171968')
 pd.set_option('display.max_rows', 100000)
 pd.set_option('display.max_columns', 1000)
 
-data_root = '/Users/hui/Desktop/python/python_project/Trender/Data'
+data_root = '/Users/hui/Desktop/python/python_project/Trender/data'
 
 
 def init_db():
