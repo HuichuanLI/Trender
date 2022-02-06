@@ -10,11 +10,11 @@ import datetime
 import os
 import jqdatasdk as jq
 
-auth('17621171968', '171968')
+auth('18917168515', 'Lhc14124908')
 pd.set_option('display.max_rows', 100000)
 pd.set_option('display.max_columns', 1000)
 
-data_root = '/Users/hui/Desktop/python/python_project/Trender/data'
+data_root = '/Users/hui/Desktop/python/python_project/Trender/data/'
 
 
 def init_db():
@@ -83,6 +83,7 @@ def export_data(data, filename, type, mode=None):
     :return:
     """
     file_root = data_root + type + '/' + filename + '.csv'
+    print(file_root)
     data.index.names = ['date']
     if mode == 'a':
         data.to_csv(file_root, mode=mode, header=False)
