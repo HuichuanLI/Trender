@@ -81,3 +81,22 @@ def get_top_stocks(data, top_n):
     for index, row in data.iterrows():
         signals.loc[index] = row.isin(row.nlargest(top_n)).astype(np.int)
     return signals
+
+if __name__ == '__main__':
+    # 测试：获取沪深300个股数据
+    stocks = ['000001.XSHE', '000858.XSHE', '002594.XSHE']
+
+    # 存放累计收益率
+    # cum_profits = pd.DataFrame()
+    # 循环获取数据
+    cum_profits = pd.DataFrame()
+
+    for code in stocks:
+        df = st.get_single_price(code, 'daily', '2016-01-01', '2022-01-01')
+        df = momentum(df)  # 调用双均线策略
+        df.plot()
+    # 存储结果
+    # returns.to_csv('/Users/ztnn/PycharmProjects/DeltaTrader/strategy/results/momentum.csv')
+    # 可视化每个月的收益率
+    # returns['cum_profit'].plot()
+    plt.show()
